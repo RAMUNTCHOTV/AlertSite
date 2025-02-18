@@ -140,4 +140,15 @@ async def test_notify(interaction: discord.Interaction):
     except Exception as e:
         await interaction.response.send_message(f"Une erreur est survenue : {e}")
 
+@bot.tree.command(name="clear", description="Supprime un certain nombre de messages dans le salon.")
+@app_commands.describe(n="Nombre de messages à supprimer.")
+async def clear(interaction: discord.Interaction, n: int):
+    """Commande pour supprimer un certain nombre de messages dans le salon."""
+    if interaction.user.guild_permissions.manage_messages:
+        # Vérifier si l'utilisateur a la permission de gérer les messages dans le salon
+        deleted = await interaction.channel.purge(limit=n)  # Supprimer les messages
+        await interaction.response.send_message(f"Supprimé {len(deleted)} message(s) dans ce salon.", ephemeral=True)
+    else:
+        await interaction.response.send_message("Tu n'as pas la permission de gérer les messages dans ce salon.", ephemeral=True)
+
 bot.run(TOKEN)
