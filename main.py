@@ -91,4 +91,11 @@ async def stock(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("❌ Aucun Steam Deck reconditionné n'est dispo pour le moment.")
 
+@bot.tree.command(name="test_notify", description="Test de la notification de disponibilité d'un Steam Deck.")
+async def test_notify(interaction: discord.Interaction):
+    """Commande /test_notify pour simuler la notification d'un Steam Deck disponible."""
+    channel = bot.get_channel(CHANNEL_ID)
+    await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
+    await interaction.response.send_message("Test de notification effectué. Vérifie le canal!")
+
 bot.run(TOKEN)
