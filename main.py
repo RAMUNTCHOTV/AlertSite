@@ -23,7 +23,13 @@ async def check_stock():
             response = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
             soup = BeautifulSoup(response.text, "html.parser")
 
-            if "Plus disponible" not in soup.text:
+            # Trouver tous les boutons sur la page
+            buttons = soup.find_all("div", class_="btn_add_to_cart")
+
+            # Vérifier si au moins un bouton n'a pas "Épuisé"
+            in_stock = any("Épuisé" not in btn.text for btn in buttons)
+
+            if in_stock:
                 await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
             else:
                 print("Aucun stock disponible pour l'instant...")
@@ -31,7 +37,7 @@ async def check_stock():
         except Exception as e:
             print(f"Erreur : {e}")
 
-        await asyncio.sleep(300)  # Vérifie toutes les 5 minutes (300 sec)
+        await asyncio.sleep(60)  # Vérifie toutes les 60 secondes
 
 @client.event
 async def on_ready():
