@@ -6,10 +6,12 @@ import asyncio
 from discord import app_commands
 from discord.ext import commands
 import time
+import logging
 
 # Charger les variables d'environnement
 TOKEN = os.getenv("TOKEN")  # Le token Discord du bot
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # ID du canal où les notifications seront envoyées
+LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID"))  # ID du canal pour les logs
 URL = "https://store.steampowered.com/sale/steamdeckrefurbished/"  # URL du Steam Deck reconditionné
 
 # Ajouter les intents nécessaires pour lire le contenu des messages et gérer les commandes
@@ -21,6 +23,30 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Variables pour suivre l'uptime
 last_update_time = time.time()  # Temps de la dernière mise à jour
+
+# Créer un objet de logger
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+
+# Créer un handler qui envoie les logs dans un canal Discord
+class DiscordHandler(logging.Handler):
+    def __init__(self, channel):
+        super().__init__()
+        self.channel = channel
+
+    async def emit(self, record):
+        log_message = self.format(record)
+        await self.channel.send(log_message)
+
+# Fonction d'initialisation du logger
+async def init_logging():
+    channel = bot.get_channel(LOG_CHANNEL_ID)
+    if channel is not None:
+        handler = DiscordHandler(channel)
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(handler)
+    else:
+        print("Le canal de logs spécifié est introuvable.")
 
 async def update_status():
     """Met à jour le statut du bot toutes les 60 secondes."""
@@ -54,14 +80,14 @@ async def check_stock():
             if in_stock:
                 await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
             else:
-                print("Aucun stock disponible pour l'instant...")
+                logger.info("Aucun stock disponible pour l'instant...")
 
             # Mettre à jour l'uptime après chaque vérification
             global last_update_time
             last_update_time = time.time()
 
         except Exception as e:
-            print(f"Erreur : {e}")
+            logger.error(f"Erreur pendant la vérification du stock : {e}")
 
         await asyncio.sleep(60)  # Vérifie toutes les 60 secondes
 
@@ -70,11 +96,15 @@ async def on_ready():
     """Synchronise les commandes slash et lance les tâches d'actualisation."""
     print(f"✅ Connecté en tant que {bot.user}")
     
+    # Synchroniser les commandes
     try:
         synced = await bot.tree.sync()
         print(f"📌 Commandes synchronisées : {len(synced)}")
     except Exception as e:
-        print(f"Erreur de synchronisation : {e}")
+        logger.error(f"Erreur de synchronisation des commandes : {e}")
+
+    # Initialiser le système de logs
+    await init_logging()
 
     # Démarrer les tâches d'actualisation
     bot.loop.create_task(check_stock())
@@ -97,8 +127,16 @@ async def stock(interaction: discord.Interaction):
 @bot.tree.command(name="test_notify", description="Test de la notification de disponibilité d'un Steam Deck.")
 async def test_notify(interaction: discord.Interaction):
     """Commande /test_notify pour simuler la notification d'un Steam Deck disponible."""
-    channel = bot.get_channel(CHANNEL_ID)
-    await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
-    await interaction.response.send_message("Test de notification effectué. Vérifie le canal!")
+    try:
+        channel = bot.get_channel(CHANNEL_ID)
+        if channel is None:
+            await interaction.response.send_message("Erreur : Le canal spécifié n'a pas pu être trouvé.")
+            return
+
+        await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
+        await interaction.response.send_message("Test de notification effectué. Vérifie le canal!")
+
+    except Exception as e:
+        await interaction.response.send_message(f"Une erreur est survenue : {e}")
 
 bot.run(TOKEN)
