@@ -18,28 +18,41 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def check_stock():
     """Vérifie la disponibilité des Steam Deck reconditionnés."""
     await bot.wait_until_ready()
-    channel = bot.get_channel(CHANNEL_ID)
+    
+    try:
+        channel = bot.get_channel(CHANNEL_ID)
+        
+        if not channel:
+            print("Erreur : Le bot n'a pas trouvé le canal.")
+            return
+        
+        print(f"Canal trouvé : {channel.name}")  # Affiche le nom du canal dans les logs
+        
+        while not bot.is_closed():
+            try:
+                response = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
+                soup = BeautifulSoup(response.text, "html.parser")
 
-    while not bot.is_closed():
-        try:
-            response = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
-            soup = BeautifulSoup(response.text, "html.parser")
+                # Trouver les boutons d'achat
+                buttons = soup.find_all("div", class_="btn_add_to_cart")
 
-            # Trouver les boutons d'achat
-            buttons = soup.find_all("div", class_="btn_add_to_cart")
+                # Vérifier si au moins un Steam Deck est dispo
+                in_stock = any("Épuisé" not in btn.text for btn in buttons)
 
-            # Vérifier si au moins un Steam Deck est dispo
-            in_stock = any("Épuisé" not in btn.text for btn in buttons)
+                if in_stock:
+                    try:
+                        await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
+                    except Exception as e:
+                        print(f"Erreur lors de l'envoi du message : {e}")
+                else:
+                    print("Aucun stock disponible pour l'instant...")
 
-            if in_stock:
-                await channel.send(f"🔥 Un Steam Deck reconditionné est DISPONIBLE ! Va vite voir : {URL}")
-            else:
-                print("Aucun stock disponible pour l'instant...")
+            except Exception as e:
+                print(f"Erreur lors du scraping de la page : {e}")
 
-        except Exception as e:
-            print(f"Erreur : {e}")
-
-        await asyncio.sleep(60)  # Vérifie toutes les 60 secondes
+            await asyncio.sleep(60)  # Vérifie toutes les 60 secondes
+    except Exception as e:
+        print(f"Erreur de récupération du canal : {e}")
 
 @bot.event
 async def on_ready():
