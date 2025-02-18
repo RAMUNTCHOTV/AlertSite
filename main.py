@@ -7,7 +7,6 @@ from discord import app_commands
 from discord.ext import commands
 import time
 
-
 # Charger les variables d'environnement
 TOKEN = os.getenv("TOKEN")  # Le token Discord du bot
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # ID du canal où les notifications seront envoyées
