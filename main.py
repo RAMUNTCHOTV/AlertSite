@@ -8,9 +8,9 @@ from discord.ext import commands
 import time
 
 # Charger les variables d'environnement
-TOKEN = os.getenv("TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
-URL = "https://store.steampowered.com/sale/steamdeckrefurbished/"
+TOKEN = os.getenv("TOKEN")  # Le token Discord du bot
+CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # ID du canal où les notifications seront envoyées
+URL = "https://store.steampowered.com/sale/steamdeckrefurbished/"  # URL du Steam Deck reconditionné
 
 # Configurer les intents et le bot
 intents = discord.Intents.default()
