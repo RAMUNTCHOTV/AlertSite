@@ -12,8 +12,11 @@ TOKEN = os.getenv("TOKEN")  # Le token Discord du bot
 CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # ID du canal où les notifications seront envoyées
 URL = "https://store.steampowered.com/sale/steamdeckrefurbished/"  # URL du Steam Deck reconditionné
 
-# Configurer les intents et le bot
+# Ajouter les intents nécessaires pour lire le contenu des messages et gérer les commandes
 intents = discord.Intents.default()
+intents.message_content = True  # Autoriser le bot à lire le contenu des messages
+
+# Configurer le bot avec les intents modifiés
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Variables pour suivre l'uptime
