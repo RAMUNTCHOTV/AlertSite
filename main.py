@@ -34,9 +34,10 @@ class DiscordHandler(logging.Handler):
         super().__init__()
         self.channel = channel
 
-    async def emit(self, record):
+    def emit(self, record):
         log_message = self.format(record)
-        await self.channel.send(log_message)
+        # Utiliser asyncio.create_task pour attendre la coroutine de façon asynchrone
+        asyncio.create_task(self.channel.send(log_message))
 
 # Fonction d'initialisation du logger
 async def init_logging():
