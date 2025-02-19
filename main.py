@@ -7,7 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import os
 
-TOKEN = "TON_TOKEN_ICI"  # Remplace par ton token Discord
+TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = 123456789012345678  # Remplace par l'ID de ton serveur
 
 # Configuration du bot
