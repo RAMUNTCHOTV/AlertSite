@@ -23,7 +23,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+    await bot.tree.sync()
     print(f"✅ Connecté en tant que {bot.user}")
     await bot.change_presence(activity=discord.Game(name="Tape /stock pour voir le stock"))
 
