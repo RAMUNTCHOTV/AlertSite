@@ -7,7 +7,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import os
 
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("DISCORD_TOKEN")  # Récupère le token depuis les variables d'environnement
+
+if not TOKEN:
+    raise ValueError("❌ ERREUR : Le token du bot est manquant. Vérifie tes variables d'environnement !")
 GUILD_ID = 123456789012345678  # Remplace par l'ID de ton serveur
 
 # Configuration du bot
